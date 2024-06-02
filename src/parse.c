@@ -6,7 +6,7 @@
 /*   By: gkehren <gkehren@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/02 14:01:28 by gkehren           #+#    #+#             */
-/*   Updated: 2024/06/02 15:54:39 by gkehren          ###   ########.fr       */
+/*   Updated: 2024/06/03 00:03:08 by gkehren          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,23 @@ char	get_symbol_type(Elf64_Sym sym, Elf64_Shdr *shdr) {
 	return type;
 }
 
+void	sort_symbols(Elf64_Sym **symtab, int symcount, const char *strtab)
+{
+	for (int i = 1; i < symcount; i++)
+	{
+		Elf64_Sym *key = symtab[i];
+		const char *key_name = strtab + key->st_name;
+		int j = i - 1;
+
+		while (j >= 0 && ft_strcmp(strtab + symtab[j]->st_name, key_name) > 0)
+		{
+			symtab[j + 1] = symtab[j];
+			j--;
+		}
+		symtab[j + 1] = key;
+	}
+}
+
 int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 {
 	Elf64_Shdr	*sections = (Elf64_Shdr *)((char *)filedata + header->e_shoff);
@@ -69,17 +86,31 @@ int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 		return (EXIT_FAILURE);
 	}
 
-	// TODO: Sort symbols by address
+	Elf64_Sym **symbols_to_display = (Elf64_Sym **)malloc(sizeof(Elf64_Sym *) * symcount);
+	for (int i = 0; i < symcount; i++)
+		symbols_to_display[i] = NULL;
+	int display_count = 0;
 
-	for (int i = 0; i < symcount; i++) {
+	for (int i = 0; i < symcount; i++)
+	{
 		if (symtab[i].st_name == 0) continue;
 		char type = get_symbol_type(symtab[i], sections);
-		if (type == 'U' || type == 'w') {
-			printf("                 %c %s\n", type, strtab + symtab[i].st_name);
-		} else if (type != 'A') {
-			printf("%016lx %c %s\n", symtab[i].st_value, type, strtab + symtab[i].st_name);
-		}
+		if (type != 'A')
+			symbols_to_display[display_count++] = &symtab[i];
 	}
+
+	sort_symbols(symbols_to_display, display_count, strtab);
+
+	for (int i = 0; i < symcount; i++) {
+		if (!symbols_to_display[i]) continue;
+		char type = get_symbol_type(*symbols_to_display[i], sections);
+		if (type == 'U' || type == 'w')
+			printf("                 %c %s\n", type, strtab + symbols_to_display[i]->st_name);
+		else
+			printf("%016lx %c %s\n", symbols_to_display[i]->st_value, type, strtab + symbols_to_display[i]->st_name);
+	}
+
+	free(symbols_to_display);
 	return (EXIT_SUCCESS);
 }
 
