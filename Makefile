@@ -1,4 +1,4 @@
-FILES:= ft_nm
+FILES:= ft_nm parse
 NAME:= ft_nm
 
 # ------------------
