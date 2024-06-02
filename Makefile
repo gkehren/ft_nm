@@ -1,4 +1,4 @@
-FILES:= ft_nm parse
+FILES:= ft_nm parse elf64 elf32
 NAME:= ft_nm
 
 # ------------------

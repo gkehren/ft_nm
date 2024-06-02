@@ -6,7 +6,7 @@
 /*   By: gkehren <gkehren@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/02 14:00:44 by gkehren           #+#    #+#             */
-/*   Updated: 2024/06/02 15:52:24 by gkehren          ###   ########.fr       */
+/*   Updated: 2024/06/03 00:22:39 by gkehren          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,8 @@ typedef struct s_symbol
 
 // parse.c
 int	parse_elf_file(void *filedata);
+
+int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata);
+int	read_symbols_elf32(Elf32_Ehdr *header, void *filedata);
 
 #endif
