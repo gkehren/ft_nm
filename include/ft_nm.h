@@ -6,7 +6,7 @@
 /*   By: gkehren <gkehren@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/02 14:00:44 by gkehren           #+#    #+#             */
-/*   Updated: 2024/06/02 15:03:52 by gkehren          ###   ########.fr       */
+/*   Updated: 2024/06/02 15:52:24 by gkehren          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,6 @@ typedef struct s_symbol
 }	t_symbol;
 
 // parse.c
-void	parse_elf_file(void *filedata);
+int	parse_elf_file(void *filedata);
 
 #endif

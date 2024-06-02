@@ -6,7 +6,7 @@
 /*   By: gkehren <gkehren@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/02 14:00:49 by gkehren           #+#    #+#             */
-/*   Updated: 2024/06/02 14:02:11 by gkehren          ###   ########.fr       */
+/*   Updated: 2024/06/02 15:53:16 by gkehren          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,20 @@ int	main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	filedata = open_file(argv[1], &filesize);
-	parse_elf_file(filedata);
+	if (parse_elf_file(filedata) == EXIT_FAILURE)
+	{
+		if (munmap(filedata, filesize) == -1)
+		{
+			perror("munmap");
+			exit(EXIT_FAILURE);
+		}
+		exit(EXIT_FAILURE);
+	}
+
 	if (munmap(filedata, filesize) == -1)
 	{
 		perror("munmap");
 		exit(EXIT_FAILURE);
 	}
-	return (0);
+	return (EXIT_SUCCESS);
 }

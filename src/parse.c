@@ -6,7 +6,7 @@
 /*   By: gkehren <gkehren@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/02 14:01:28 by gkehren           #+#    #+#             */
-/*   Updated: 2024/06/02 15:42:35 by gkehren          ###   ########.fr       */
+/*   Updated: 2024/06/02 15:54:39 by gkehren          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ char	get_symbol_type(Elf64_Sym sym, Elf64_Shdr *shdr) {
 	return type;
 }
 
-void	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
+int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 {
 	Elf64_Shdr	*sections = (Elf64_Shdr *)((char *)filedata + header->e_shoff);
 	const char	*strtab = NULL;
@@ -66,7 +66,7 @@ void	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 	if (!symtab || !strtab)
 	{
 		printf("ft_nm: No symbols\n");
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 
 	// TODO: Sort symbols by address
@@ -76,13 +76,14 @@ void	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 		char type = get_symbol_type(symtab[i], sections);
 		if (type == 'U' || type == 'w') {
 			printf("                 %c %s\n", type, strtab + symtab[i].st_name);
-		} else {
+		} else if (type != 'A') {
 			printf("%016lx %c %s\n", symtab[i].st_value, type, strtab + symtab[i].st_name);
 		}
 	}
+	return (EXIT_SUCCESS);
 }
 
-void	read_symbols_elf32(Elf32_Ehdr *header, void *filedata)
+int	read_symbols_elf32(Elf32_Ehdr *header, void *filedata)
 {
 	Elf32_Shdr	*sections = (Elf32_Shdr *)((char *)filedata + header->e_shoff);
 	const char	*strtab = NULL;
@@ -105,16 +106,17 @@ void	read_symbols_elf32(Elf32_Ehdr *header, void *filedata)
 	if (!symtab || !strtab)
 	{
 		printf("ft_nm: No symbols\n");
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 
 	for (int i = 0; i < symcount; i++)
 	{
 		printf("%08x %c %s\n", symtab[i].st_value, (ELF32_ST_BIND(symtab[i].st_info) == STB_GLOBAL) ? 'T' : 't', strtab + symtab[i].st_name);
 	}
+	return (EXIT_SUCCESS);
 }
 
-void	parse_elf_file(void *filedata)
+int	parse_elf_file(void *filedata)
 {
 	Elf64_Ehdr	*header;
 
@@ -126,20 +128,23 @@ void	parse_elf_file(void *filedata)
 		|| header->e_ident[EI_MAG3] != ELFMAG3)
 	{
 		printf("Not an ELF file\n");
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 	// Check if the file is a 64 or 32-bit ELF file
 	if (header->e_ident[EI_CLASS] == ELFCLASS32)
 	{
-		read_symbols_elf32((Elf32_Ehdr *)header, filedata);
+		if (read_symbols_elf32((Elf32_Ehdr *)header, filedata) == EXIT_FAILURE)
+			return (EXIT_FAILURE);
 	}
 	else if (header->e_ident[EI_CLASS] == ELFCLASS64)
 	{
-		read_symbols_elf64((Elf64_Ehdr *)header, filedata);
+		if (read_symbols_elf64((Elf64_Ehdr *)header, filedata) == EXIT_FAILURE)
+			return (EXIT_FAILURE);
 	}
 	else
 	{
 		printf("Invalid ELF class\n");
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
+	return (EXIT_SUCCESS);
 }
