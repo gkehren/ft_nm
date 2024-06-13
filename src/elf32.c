@@ -1,50 +1,66 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   elf32.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gkehren <gkehren@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/03 00:21:24 by gkehren           #+#    #+#             */
-/*   Updated: 2024/06/03 00:45:26 by gkehren          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../include/ft_nm.h"
 
-static char	get_symbol_type(Elf32_Sym sym, Elf32_Shdr *shdr) {
-	char type = '?';
+static char	get_symbol_type_x32(Elf32_Sym sym, Elf32_Shdr *shdr) {
+	char	type = '?';
 
-	if (ELF32_ST_BIND(sym.st_info) == STB_GNU_UNIQUE) return 'u';
-	if (ELF32_ST_BIND(sym.st_info) == STB_WEAK)
-	{
-		if (sym.st_shndx == SHN_UNDEF) return 'w';
-		return 'W';
-	}
 	if (ELF32_ST_BIND(sym.st_info) == STB_WEAK && ELF32_ST_TYPE(sym.st_info) == STT_OBJECT)
 	{
-		if (sym.st_shndx == SHN_UNDEF) return 'v';
-		return 'V';
+		if (sym.st_shndx == SHN_UNDEF)
+			return ('v');
+		return ('V');
 	}
-	if (sym.st_shndx == SHN_UNDEF) return 'U';
-	if (sym.st_shndx == SHN_ABS) return 'A';
-	if (sym.st_shndx == SHN_COMMON) return 'C';
-	if (shdr[sym.st_shndx].sh_type == SHT_NOBITS && shdr[sym.st_shndx].sh_flags == (SHF_ALLOC | SHF_WRITE)) type = 'b';
-	if (shdr[sym.st_shndx].sh_type == SHT_PROGBITS && shdr[sym.st_shndx].sh_flags == SHF_ALLOC) type = 'r';
-	if (shdr[sym.st_shndx].sh_type == SHT_PROGBITS && shdr[sym.st_shndx].sh_flags == (SHF_ALLOC | SHF_WRITE)) type = 'd';
-	if (shdr[sym.st_shndx].sh_type == SHT_PROGBITS && shdr[sym.st_shndx].sh_flags == (SHF_ALLOC | SHF_EXECINSTR)) type = 't';
-	if (shdr[sym.st_shndx].sh_type == SHT_DYNAMIC) type = 'd';
-	if (shdr[sym.st_shndx].sh_type == SHT_FINI_ARRAY) type = 'd';
-	if (shdr[sym.st_shndx].sh_type == SHT_INIT_ARRAY) type = 'd';
 
-	// Convert to uppercase if the symbol is global
+	if (ELF32_ST_BIND(sym.st_info) == STB_WEAK)
+	{
+		if (sym.st_shndx == SHN_UNDEF)
+			return ('w');
+		return ('W');
+	}
+
+	if (ELF32_ST_BIND(sym.st_info) == STB_GNU_UNIQUE) return ('u');
+	if (sym.st_shndx == SHN_UNDEF) return ('U');
+	if (sym.st_shndx == SHN_ABS) return ('A');
+	if (sym.st_shndx == SHN_COMMON) return ('C');
+
+	Elf32_Shdr section = shdr[sym.st_shndx];
+
+	if (section.sh_type == SHT_NOBITS)
+	{
+		if (section.sh_flags & SHF_ALLOC)
+			if (section.sh_flags & SHF_WRITE)
+				type = 'b';
+	}
+	else if (section.sh_type == SHT_PROGBITS)
+	{
+		if (section.sh_flags & SHF_ALLOC)
+		{
+			if (section.sh_flags & SHF_EXECINSTR)
+				type = 't';
+			else if (section.sh_flags & SHF_WRITE)
+				type = 'd';
+			else if (section.sh_flags & SHF_MERGE)
+				type = 'r';
+			else
+				type = 'r';
+		}
+	}
+	else if (section.sh_type == SHT_DYNAMIC)
+		type = 'd';
+	else if (section.sh_type == SHT_FINI_ARRAY)
+		type = 'd';
+	else if (section.sh_type == SHT_INIT_ARRAY)
+		type = 'd';
+
+	if (shdr[sym.st_shndx].sh_type == SHT_NOTE && shdr[sym.st_shndx].sh_flags == SHF_ALLOC)
+		type = 'r';
+
 	if (ELF32_ST_BIND(sym.st_info) == STB_GLOBAL)
 		type = (char)ft_toupper(type);
 
-	return type;
+	return (type);
 }
 
-static void	sort_symbols(Elf32_Sym **symtab, int symcount, const char *strtab)
+static void	sort_symbols_x32(Elf32_Sym **symtab, int symcount, const char *strtab)
 {
 	for (int i = 1; i < symcount; i++)
 	{
@@ -91,16 +107,16 @@ int	read_symbols_elf32(Elf32_Ehdr *header, void *filedata)
 	for (int i = 0; i < symcount; i++)
 	{
 		if (symtab[i].st_name == 0) continue;
-		char type = get_symbol_type(symtab[i], sections);
+		char type = get_symbol_type_x32(symtab[i], sections);
 		if (type != 'A')
 			symbols_to_display[display_count++] = &symtab[i];
 	}
 
-	sort_symbols(symbols_to_display, display_count, strtab);
+	sort_symbols_x32(symbols_to_display, display_count, strtab);
 
 	for (int i = 0; i < display_count; i++)
 	{
-		char type = get_symbol_type(*symbols_to_display[i], sections);
+		char type = get_symbol_type_x32(*symbols_to_display[i], sections);
 		if (type == 'U' || type == 'w')
 			ft_printf("         %c %s\n", type, strtab + symbols_to_display[i]->st_name);
 		else

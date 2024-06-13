@@ -1,9 +1,15 @@
-FROM alpine:latest
+FROM debian:latest
 
-RUN apk update && apk add binutils gcc make musl-dev
+RUN apt-get update && apt-get install -y \
+	gcc \
+	gcc-multilib \
+	vim \
+	file \
+	valgrind \
+	make
 
 COPY . /app
 
 WORKDIR /app
 
-CMD ["/bin/sh"]
+CMD ["/bin/bash"]
