@@ -104,7 +104,7 @@ int	read_symbols_elf32(Elf32_Ehdr *header, void *filedata)
 		if (type == 'U' || type == 'w')
 			ft_printf("         %c %s\n", type, strtab + symbols_to_display[i]->st_name);
 		else
-			printf("%s %c %s\n", ulong_to_hex_str(symbols_to_display[i]->st_value, 32), type, strtab + symbols_to_display[i]->st_name);
+			ft_printf("%s %c %s\n", ulong_to_hex_str(symbols_to_display[i]->st_value, 32), type, strtab + symbols_to_display[i]->st_name);
 	}
 
 	free(symbols_to_display);
