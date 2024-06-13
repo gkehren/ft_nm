@@ -19,8 +19,6 @@
 # include <sys/mman.h>
 # include <sys/stat.h>
 # include <elf.h>
-
-// TODO: remove
 # include <stdio.h>
 
 # include "../libft/libft.h"
