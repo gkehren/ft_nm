@@ -79,7 +79,7 @@ int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 
 	if (!symtab || !strtab)
 	{
-		printf("ft_nm: No symbols\n");
+		ft_printf("ft_nm: No symbols\n");
 		return (EXIT_FAILURE);
 	}
 
@@ -100,9 +100,9 @@ int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata)
 	{
 		char type = get_symbol_type(*symbols_to_display[i], sections);
 		if (type == 'U' || type == 'w')
-			printf("                 %c %s\n", type, strtab + symbols_to_display[i]->st_name);
+			ft_printf("                 %c %s\n", type, strtab + symbols_to_display[i]->st_name);
 		else
-			printf("%016lx %c %s\n", symbols_to_display[i]->st_value, type, strtab + symbols_to_display[i]->st_name);
+			ft_printf("%s %c %s\n", ulong_to_hex_str(symbols_to_display[i]->st_value, 64), type, strtab + symbols_to_display[i]->st_name);
 	}
 
 	free(symbols_to_display);

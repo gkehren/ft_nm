@@ -23,7 +23,7 @@ int	parse_elf_file(void *filedata)
 		|| header->e_ident[EI_MAG2] != ELFMAG2
 		|| header->e_ident[EI_MAG3] != ELFMAG3)
 	{
-		printf("Not an ELF file\n");
+		ft_printf("Not an ELF file\n");
 		return (EXIT_FAILURE);
 	}
 	// Check if the file is a 64 or 32-bit ELF file
@@ -39,8 +39,21 @@ int	parse_elf_file(void *filedata)
 	}
 	else
 	{
-		printf("Invalid ELF class\n");
+		ft_printf("Invalid ELF class\n");
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);
+}
+
+char	*ulong_to_hex_str(unsigned long num, int addr_size)
+{
+	static char	hex_str[17];
+	const char*	hex_digis = "0123456789abcdef";
+	hex_str[16] = '\0';
+	for (int i = (addr_size == 32) ? 7 : 15; i >= 0; i--)
+	{
+		hex_str[i] = hex_digis[num & 0xF];
+		num >>= 4;
+	}
+	return (hex_str);
 }

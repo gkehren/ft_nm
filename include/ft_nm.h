@@ -33,6 +33,7 @@ typedef struct s_symbol
 
 // parse.c
 int	parse_elf_file(void *filedata);
+char	*ulong_to_hex_str(unsigned long num, int addr_size);
 
 int	read_symbols_elf64(Elf64_Ehdr *header, void *filedata);
 int	read_symbols_elf32(Elf32_Ehdr *header, void *filedata);
